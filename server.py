@@ -152,9 +152,9 @@ def run_server():
         PID = subprocess.Popen(SOCAT).pid
         syslog.syslog('socat started on '+str(PTY)+', PID:'+str(PID))
     except:
-            bind = ''
+        bind = ''
         e = sys.exc_info()[0]
-            print "error: %s" % e
+        print "error: %s" % e
 
         syslog.syslog('VMCserver cannot start socat '+str(SOCAT))
 
@@ -194,20 +194,20 @@ def run_server():
             if s is portno:
                bread = Sport.read(256);
                #print >>sys.stderr, 'Read %s Bytes', sys.getsizeof(bread)
-           debug(DBGFRAME,'received from VMC ',binascii.hexlify(bread))
+                debug(DBGFRAME,'received from VMC ',binascii.hexlify(bread))
                frames = pdata.findall(bread)
-           if len(frames)>0:       # we have frames 
-               sending = sender.get()
-               debug(DBGFRAME,len(frames), 'frame received from VMConly one expected from read ')
-               for frame in frames:
-                # need to be check for consistency of the sender, if it does not exist drop the frame
-                   debug(DBGFRAME, "frame received from VMC stored in client queue ", binascii.hexlify(frame))
-                   if sending :
-                    message_queues[sending].put(frame)
-                   else:
-                    debug( DBGCLIENT,'client is dead (socket is not in list) drop the frame')
-           Sport.write(binascii.a2b_hex('07f3'))   #send an ACK back to the VMC
-           Ready = True     #next client request can be processed
+                if len(frames)>0:       # we have frames 
+                   sending = sender.get()
+                   debug(DBGFRAME,len(frames), 'frame received from VMConly one expected from read ')
+                   for frame in frames:
+                    # need to be check for consistency of the sender, if it does not exist drop the frame
+                       debug(DBGFRAME, "frame received from VMC stored in client queue ", binascii.hexlify(frame))
+                       if sending :
+                           message_queues[sending].put(frame)
+                       else:
+                           debug( DBGCLIENT,'client is dead (socket is not in list) drop the frame')
+                Sport.write(binascii.a2b_hex('07f3'))   #send an ACK back to the VMC
+                Ready = True     #next client request can be processed
             elif s is server:
                 # A "readable" server socket is ready to accept a connection
                 connection, client_address = s.accept()
@@ -220,14 +220,14 @@ def run_server():
             else:
                 data = s.recv(1024)
                 if data:
-    #		print binascii.hexlify(data)
-            frame = pdata.match(data)    #extract the frame from the received data (filter out ACK)
-            if frame:
-                    # A readable client socket has data
+                    # print binascii.hexlify(data)
+                    frame = pdata.match(data)    #extract the frame from the received data (filter out ACK)
+                    if frame:
+                        # A readable client socket has data
                         debug(DBGFRAME,'received',binascii.hexlify(data),s.getpeername()," from client",s.getpeername()," retained is ",binascii.hexlify(frame.group(1)))
-                messages.put(frame.group(1))  #store in send queue
-                if reply(frame.group(1)):	# store only the command frames
-                    sender.put(s)			    #store sender in sender queue if we expect a reply
+                        messages.put(frame.group(1))    #store in send queue
+                        if reply(frame.group(1)):       # store only the command frames
+                            sender.put(s)               #store sender in sender queue if we expect a reply
                         # Add output channel for response
                         if s not in outputs:
                             outputs.append(s)
@@ -242,33 +242,33 @@ def run_server():
                     s.close()
                     # Remove message queue
                     del message_queues[s]
-            del s   #finally remove the socket
+                    del s   #finally remove the socket
         # Handle outputs
         for s in writable:
-        if s is portno:
-            if not messages.empty() and Ready:
-            tosend = messages.get()
-                if reply(tosend):		#this is a single byte command must get an answer
-                Ready = False	
-            debug(DBGFRAME,'Sending frame ',binascii.hexlify(tosend),' to VMC')
-                Nbytes=Sport.write(tosend)    #send next message in queue
-        elif s in outputs:
+            if s is portno:
+                if not messages.empty() and Ready:
+                    tosend = messages.get()
+                    if reply(tosend):		#this is a single byte command must get an answer
+                        Ready = False	
+                    debug(DBGFRAME,'Sending frame ',binascii.hexlify(tosend),' to VMC')
+                    Nbytes=Sport.write(tosend)    #send next message in queue
+            elif s in outputs:
                 if not message_queues[s].empty():
-                next_msg=message_queues[s].get_nowait()
+                    next_msg=message_queues[s].get_nowait()
                     # s is ready for writing, write back the queued received message
                     debug (DBGFRAME,'sending ',binascii.hexlify(next_msg)," to ",s.getpeername())
                     s.send(next_msg)
 
         for s in exceptional:
-                    debug( DBGCLIENT,'handling exceptional condition for', s.getpeername())
+            debug( DBGCLIENT,'handling exceptional condition for', s.getpeername())
             # Stop listening for input on the connection
-                    inputs.remove(s)
-                    if s in outputs:
-                        outputs.remove(s)
-                    s.close()
+            inputs.remove(s)
+            if s in outputs:
+                outputs.remove(s)
+            s.close()
 
-                    # Remove message queue
-                    del message_queues[s]
+            # Remove message queue
+            del message_queues[s]
 
 if __name__ == "__main__":
     run_server()
