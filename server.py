@@ -103,6 +103,8 @@ def run_server():
     #open the serial port attached to the VMC
 
     serialport = config.get('VMC','device')
+    serial_timeout = float(config.get('VMC','timeout'))
+
 
     Sport = serial.Serial(port = serialport, baudrate = 9600, timeout = 0.05)
 
@@ -188,7 +190,7 @@ def run_server():
 
     #   Wait for at least one of the sockets to be ready for processing
     #   print >>sys.stderr, '\nwaiting for the next event'
-        readable, writable, exceptional = select.select(inputs, outputs, inputs)
+        readable, writable, exceptional = select.select(inputs, outputs, inputs, timeout=serial_timeout)
         # Handle inputs
         # this need to be handling the case where only an ack is received from the VMC
         for s in readable:
