@@ -192,10 +192,10 @@ def run_server():
         # this need to be handling the case where only an ack is received from the VMC
         for s in readable:
             if s is portno:
-               bread = Sport.read(256);
-               #print >>sys.stderr, 'Read %s Bytes', sys.getsizeof(bread)
+                bread = Sport.read(256);
+                #print >>sys.stderr, 'Read %s Bytes', sys.getsizeof(bread)
                 debug(DBGFRAME,'received from VMC ',binascii.hexlify(bread))
-               frames = pdata.findall(bread)
+                frames = pdata.findall(bread)
                 if len(frames)>0:       # we have frames 
                    sending = sender.get()
                    debug(DBGFRAME,len(frames), 'frame received from VMConly one expected from read ')
