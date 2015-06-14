@@ -190,7 +190,7 @@ def run_server():
 
     #   Wait for at least one of the sockets to be ready for processing
     #   print >>sys.stderr, '\nwaiting for the next event'
-        readable, writable, exceptional = select.select(inputs, outputs, inputs, timeout=serial_timeout)
+        readable, writable, exceptional = select.select(inputs, outputs, inputs, serial_timeout)
         # Handle inputs
         # this need to be handling the case where only an ack is received from the VMC
         for s in readable:
