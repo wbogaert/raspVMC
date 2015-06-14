@@ -16,54 +16,55 @@ import syslog
 import time
 from stat import *
 
-global server
-global config
-global debugL
 
-global DBGCLIENT
-global DBGCONFIG
-global DBGFRAME
-global DBGFile
-global DBG
-global outputs
-global inputs
 
 
 def debug(level,*args):
-	
-	if level <= int(debugL):
-		print time.strftime('%d/%m/%y %H:%M:%S',time.localtime()),':',
-		for arg in args:
-			print arg,
-		print
-		sys.stdout.flush()
+    if level <= int(debugL):
+        print time.strftime('%d/%m/%y %H:%M:%S',time.localtime()),':',
+        for arg in args:
+            print arg,
+        print
+        sys.stdout.flush()
 
 
 def signal_handler(signal,frame):
-        syslog.syslog('Signal (SIGINT/SIGKILL) received Aborting Server, clearing Socket')
-	while inputs:
-		instance=inputs.pop()
-		mode=os.fstat(instance.fileno()).st_mode
-		if S_ISSOCK(mode) and instance <> server:
-			syslog.syslog('Closing IP socket on client '+str(instance.getpeername()))
-		elif instance == server:		
-			syslog.syslog('Closing server socket')
-			server.close()
-		else:
-			syslog.syslog('Closing device connection ')
-			instance.close()
-        sys.exit(0)
+    syslog.syslog('Signal (SIGINT/SIGKILL) received Aborting Server, clearing Socket')
+    while inputs:
+        instance=inputs.pop()
+        mode=os.fstat(instance.fileno()).st_mode
+        if S_ISSOCK(mode) and instance <> server:
+            syslog.syslog('Closing IP socket on client '+str(instance.getpeername()))
+        elif instance == server:		
+            syslog.syslog('Closing server socket')
+            server.close()
+        else:
+            syslog.syslog('Closing device connection ')
+            instance.close()
+    sys.exit(0)
 
 def reply(tosend):
 # verify that we expect a reponse from the VMC
 # len = 8 for normal request data from VMC
 # cmd = 9c when the command is RS232 mode
 
-	temp = (len(tosend)==8) or (tosend[3] == b'\x9b')
-	return (temp)
+    temp = (len(tosend)==8) or (tosend[3] == b'\x9b')
+    return (temp)
 
 def run_server():
     
+    global server
+    global config
+    global debugL
+
+    global DBGCLIENT
+    global DBGCONFIG
+    global DBGFRAME
+    global DBGFile
+    global DBG
+    global outputs
+    global inputs
+
     #initialize Globals
 
     DBGCONFIG=2
@@ -84,10 +85,10 @@ def run_server():
 
     # get debug level set to 0 if not defined
     try:
-            debugL = config.get('DEBUG','level')
+        debugL = config.get('DEBUG','level')
 
     except ConfigParser.NoSectionError, ConfigParser.NoOptionError:
-            debugL=0
+        debugL=0
 
 
     try:
